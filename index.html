@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Schedule with Alarm</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .text-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        h1 {
+            font-size: 60px;
+            margin: 0;
+        }
+
+        h5 {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+
+        h5 ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+
+        /* Styling for the alarm button */
+        #stopAlarm {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: red;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="ind.jpg" alt="Daily schedule illustration">
+        <div class="text-overlay">
+            <h1>Daily Things</h1>
+            <h5 id="schedule">
+                From 9:00 to 10:00 = waking up. <span id="timer-9-10"></span> <br>
+                From 10:00 to 11:00 = JavaScript practice. <span id="timer-10-11"></span> <br>
+                From 11:00 to 12:00 = web development. <span id="timer-11-12"></span> <br>
+                From 12:00 to 1:00 = lunch. <span id="timer-12-13"></span> <br>
+                From 1:00 to 2:00 = researching (topics): <br>
+                <ul>
+                    <li>How many increases and decreases?</li>
+                    <li>Which country is the biggest and has the largest population?</li>
+                    <li>What is the important thing in life that makes you great?</li>
+                </ul>
+                From 2:00 to 3:30 = break. <span id="timer-14-1530"></span> <br>
+                From 3:30 to 4:30 = extra lessons and typing practice. <span id="timer-1530-1630"></span> <br>
+                From 4:30 to 5:00 = learn about Mac for 30 minutes. <span id="timer-1630-1700"></span> <br>
+                From 5:00 to 10:00 = other activities. <span id="timer-17-22"></span>
+            </h5>
+        </div>
+        <button id="stopAlarm">Stop Alarm</button>
+    </div>
+
+    <!-- Alarm sound setup -->
+    <audio id="alarmSound" src="alarm.mp3" preload="auto" loop></audio>
+
+    <script>
+        const schedule = [
+            { time: "09:00", elementId: "timer-9-10", alarmTriggered: false },
+            { time: "10:00", elementId: "timer-10-11", alarmTriggered: false },
+            { time: "11:00", elementId: "timer-11-12", alarmTriggered: false },
+            { time: "12:00", elementId: "timer-12-13", alarmTriggered: false },
+            { time: "14:00", elementId: "timer-14-1530", alarmTriggered: false },
+            { time: "15:30", elementId: "timer-1530-1630", alarmTriggered: false },
+            { time: "16:30", elementId: "timer-1630-1700", alarmTriggered: false },
+            { time: "17:00", elementId: "timer-17-22", alarmTriggered: false }
+        ];
+
+        const alarmSound = document.getElementById("alarmSound");
+        const stopAlarmButton = document.getElementById("stopAlarm");
+
+        // Function to start countdown for each event
+        function startCountdown() {
+            schedule.forEach(event => {
+                const timerElement = document.getElementById(event.elementId);
+
+                const checkAlarm = () => {
+                    const now = new Date();
+                    const [hours, minutes] = event.time.split(":");
+                    const eventTime = new Date();
+                    eventTime.setHours(hours, minutes, 0, 0);
+
+                    // Check if the event time is now or in the past and alarm has not been triggered yet
+                    if (eventTime <= now && !event.alarmTriggered) {
+                        timerElement.textContent = "It's time!";
+                        playAlarm();
+                        event.alarmTriggered = true; // Set flag to prevent retriggering
+                    } else {
+                        // Countdown update
+                        const timeDiff = eventTime - now;
+                        if (timeDiff > 0) {
+                            const hoursLeft = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                            const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                            timerElement.textContent = `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
+                        } else {
+                            // Timer message for past alarms
+                            timerElement.textContent = "Alarm missed!";
+                        }
+                    }
+                };
+
+                // Start checking every second
+                checkAlarm(); // Initial check
+                setInterval(checkAlarm, 1000);
+            });
+        }
+
+        // Function to play the alarm
+        function playAlarm() {
+            alarmSound.play();
+            stopAlarmButton.style.display = "block"; // Show the stop button
+        }
+
+        // Stop the alarm sound
+        stopAlarmButton.addEventListener("click", () => {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        });
+
+        // Initialize countdown on page load
+        startCountdown();
+    </script>
+</body>
+</html>
